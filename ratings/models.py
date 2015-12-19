@@ -50,6 +50,16 @@ class RatingMixin(models.Model):
 
 	# All rateable fields of a given object
 	fields = ArrayField()
+	field_scores = JSONField()
+
+	def calculate_score(self, field):
+
+		return 10
+
+	def total_score(self):
+
+		for field in self.fields:
+
 
 	'''def __init__(self, fields=[]):
 
