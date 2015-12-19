@@ -11,6 +11,9 @@ class Score(models.Model):
 	'''
 	content_type = models.ForeignKey(ContentType)
 
+	votes_counts = models.PositiveIntegerField() # Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
+	score = models.DecimalField() # De feitelijke score
+
 
 
 class Vote(models.Model):
@@ -20,6 +23,8 @@ class Vote(models.Model):
 
 	content_type = models.ForeignKey(ContentType)
 	user = models.ForeignKey(User, related_name='votes')
+	created_at = models.DateTimeField(auto_now_add=True)
+	modified_at = models.DateTimeField(auto_now=True)
 
 	class Meta:
 
@@ -27,4 +32,7 @@ class Vote(models.Model):
 		unique_together = (	
 			('content_type', 'object_id', 'user')
 		)
+
+	def __unicode__(self):
+		return 'Score van %s' % (self.user)
 
