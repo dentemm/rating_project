@@ -12,8 +12,17 @@ class Score(models.Model):
 	'''
 	content_type = models.ForeignKey(ContentType)
 
-	votes_counts = models.PositiveIntegerField() # Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
+	# Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
+	votes_count = models.PositiveIntegerField(default=0) 
 	score = models.DecimalField() # De feitelijke score
+
+	def get_votes(self):
+
+		return Vote.objects.filter(content_type=self.content_type, object_id=self.object_id)
+
+	def recalculate(self, weight=0):
+
+		existing_votes = self.get_votes()
 
 
 
@@ -39,13 +48,12 @@ class Vote(models.Model):
 
 class RatingMixin(models.Model):
 
+	# All rateable fields of a given object
 	fields = ArrayField()
 
-	def __init__(self, fields={}):
+	'''def __init__(self, fields=[]):
 
-		for key in fields:
+		for field in fields:
 
-
-
-
+			self.fields.append(field)'''
 
