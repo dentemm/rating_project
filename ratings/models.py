@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.contenttypes.models import ContentType
 
 # Create your models here.
@@ -35,4 +36,16 @@ class Vote(models.Model):
 
 	def __unicode__(self):
 		return 'Score van %s' % (self.user)
+
+class RatingMixin(models.Model):
+
+	fields = ArrayField()
+
+	def __init__(self, fields={}):
+
+		for key in fields:
+
+
+
+
 
