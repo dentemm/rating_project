@@ -32,10 +32,14 @@ class Vote(models.Model):
 	Een enkele stem voor een bepaald content object, gelinkt aan een gebruiker
 	'''
 
+	# Het model waarop wordt gestemd
 	content_type = models.ForeignKey(ContentType)
+	# De gebruiker die een stem uitbrengt
 	user = models.ForeignKey(User, related_name='votes')
 	# Een unique identifier voor een model instance, dit is typisch de pk van het object
 	object_id = models.PositiveIntegerField()
+
+
 	created_at = models.DateTimeField(auto_now_add=True)
 	modified_at = models.DateTimeField(auto_now=True)
 
@@ -55,11 +59,17 @@ class RatingMixin(models.Model):
 	Voeg deze mixin toe aan een model dat je wil raten, of waarvan je bepaalde fields (ForeignKey fields) wil raten
 	'''
 
-	# All rateable fields of a given object
-	rating_fields = ArrayField()
-	# Voor elk van deze fields wordt een score bijgehouden, via een dict (key-value = field-rating)
-	field_scores = JSONField()
+	rating_scores = generic.GenericRelation(Score)
+	field_scores = generic.GenericRelation(Vote)
 
+	class Meta:
+		abstract = Trur
+
+	# Wat is key hier? mss het field?
+	def get_score(self, key):
+		return Score.objects.get_for(self, key)
+
+	'''
 	def field_score(self, field):
 
 		return 10
@@ -68,7 +78,7 @@ class RatingMixin(models.Model):
 
 		for field in self.rating_fields:
 
-			current_score = field_scores[field]
+			current_score = field_scores[field]'''
 
 
 	'''def __init__(self, fields=[]):
