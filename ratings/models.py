@@ -68,7 +68,7 @@ class RatingMixin(models.Model):
 	votes = GenericRelation(Vote)
 
 	class Meta:
-		abstract = Trur
+		abstract = True
 
 	# Wat is key hier? mss het field?
 	def get_score(self, key):
