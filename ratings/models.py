@@ -1,11 +1,18 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+#from django.contrib.postgres.fields import ArrayField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.auth.models import User
 
 # Create your models here.
+
+__all__ = ('Score', 'Vote', )
+
+now = datetime.now
 
 class Score(models.Model):
 	'''
@@ -39,6 +46,9 @@ class Vote(models.Model):
 
 	# Het model waarop wordt gestemd
 	content_type = models.ForeignKey(ContentType)
+	# 
+	object_id = models.PositiveIntegerField()
+
 	# De gebruiker die een stem uitbrengt
 	user = models.ForeignKey(User, related_name='votes')
 	# Een unique identifier voor een model instance, dit is typisch de pk van het object
@@ -59,6 +69,7 @@ class Vote(models.Model):
 		return 'Score van %s' % (self.user)
 
 
+# Niet meer nodig, zal worden vervangen door een field
 class RatingMixin(models.Model):
 	'''
 	Voeg deze mixin toe aan een model dat je wil raten, of waarvan je bepaalde fields (ForeignKey fields) wil raten
