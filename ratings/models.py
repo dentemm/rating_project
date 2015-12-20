@@ -10,11 +10,12 @@ class Score(models.Model):
 	'''
 	Een score voor een bijhorende content object
 	'''
-	content_type = models.ForeignKey(ContentType)
+	content_type = models.ForeignKey(ContentType, related_name='score')
 
 	# Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
 	votes_count = models.PositiveIntegerField(default=0) 
-	score = models.DecimalField() # De feitelijke score
+	# De feitelijke score
+	score = models.DecimalField() 
 
 	def get_votes(self):
 
@@ -33,6 +34,8 @@ class Vote(models.Model):
 
 	content_type = models.ForeignKey(ContentType)
 	user = models.ForeignKey(User, related_name='votes')
+	# Een unique identifier voor een model instance, dit is typisch de pk van het object
+	object_id = models.PositiveIntegerField()
 	created_at = models.DateTimeField(auto_now_add=True)
 	modified_at = models.DateTimeField(auto_now=True)
 
@@ -46,19 +49,26 @@ class Vote(models.Model):
 	def __unicode__(self):
 		return 'Score van %s' % (self.user)
 
+
 class RatingMixin(models.Model):
+	'''
+	Voeg deze mixin toe aan een model dat je wil raten, of waarvan je bepaalde fields (ForeignKey fields) wil raten
+	'''
 
 	# All rateable fields of a given object
-	fields = ArrayField()
+	rating_fields = ArrayField()
+	# Voor elk van deze fields wordt een score bijgehouden, via een dict (key-value = field-rating)
 	field_scores = JSONField()
 
-	def calculate_score(self, field):
+	def field_score(self, field):
 
 		return 10
 
-	def total_score(self):
+	def global_score(self):
 
-		for field in self.fields:
+		for field in self.rating_fields:
+
+			current_score = field_scores[field]
 
 
 	'''def __init__(self, fields=[]):
