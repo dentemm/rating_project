@@ -12,8 +12,6 @@ from django.contrib.auth.models import User
 
 __all__ = ('Score', 'Vote', )
 
-now = datetime.now
-
 class Score(models.Model):
 	'''
 	Een score voor een bijhorende content object. 
@@ -26,16 +24,24 @@ class Score(models.Model):
 
 	# Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
 	votes_count = models.PositiveIntegerField(default=0) 
-	# De feitelijke score
-	score = models.DecimalField() 
+	# De feitelijke score (totaalsom ?)
+	score = models.IntegerField() 
 
-	def get_votes(self):
+	class Meta:
+		unique_together = (
+			('content_type', 'object_id', 'user')
+		)
+
+	def __unicode__(self):
+		return u'%s scored %s with %s votes' % (self.content_object, self.score, self.votes_count)
+
+	'''def get_votes(self):
 
 		return Vote.objects.filter(content_type=self.content_type, object_id=self.object_id)
 
 	def recalculate(self, weight=0):
 
-		existing_votes = self.get_votes()
+		existing_votes = self.get_votes()'''
 
 
 
@@ -48,6 +54,7 @@ class Vote(models.Model):
 	content_type = models.ForeignKey(ContentType)
 	# 
 	object_id = models.PositiveIntegerField()
+	content_object = GenericForeignKey('content_type', 'content_id')
 
 	# De gebruiker die een stem uitbrengt
 	user = models.ForeignKey(User, related_name='votes')
@@ -66,7 +73,18 @@ class Vote(models.Model):
 		)
 
 	def __unicode__(self):
-		return 'Score van %s' % (self.user)
+		return 'Score (%s) van %s op %s' % (self.score, self.user, self.content_object) 
+
+	def save(self, *args, **kwargs):
+		self.modified_at = datetime.now()
+
+		super(Vote, self).save(*args, **kwargs)
+
+
+
+
+
+
 
 
 # Niet meer nodig, zal worden vervangen door een field
