@@ -3,14 +3,19 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 
 # Create your models here.
 
 class Score(models.Model):
 	'''
-	Een score voor een bijhorende content object
+	Een score voor een bijhorende content object. 
 	'''
-	content_type = models.ForeignKey(ContentType, related_name='score')
+
+	# ContentType generic relations: content_type en content_id required!
+	content_type = models.ForeignKey(ContentType)
+	content_id = models.PositiveIntegerField()
+	content_object = GenericForeignKey('content_type', 'content_id') # generic relation
 
 	# Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
 	votes_count = models.PositiveIntegerField(default=0) 
@@ -59,8 +64,8 @@ class RatingMixin(models.Model):
 	Voeg deze mixin toe aan een model dat je wil raten, of waarvan je bepaalde fields (ForeignKey fields) wil raten
 	'''
 
-	rating_scores = generic.GenericRelation(Score)
-	field_scores = generic.GenericRelation(Vote)
+	scores = GenericRelation(Score)
+	votes = GenericRelation(Vote)
 
 	class Meta:
 		abstract = Trur
