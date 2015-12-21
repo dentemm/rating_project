@@ -1,5 +1,5 @@
 from datetime import datetime
-from md5 import new as md5
+#from md5 import new as md5
 
 from django.db.models import PositiveIntegerField, IntegerField
 from django.contrib.contenttypes.models import ContentType
@@ -43,6 +43,29 @@ class RatingManager(object):
 			key = self.field.key,
 		)
 
+class RatingCreator(object):
+
+	def __init__(self, field):
+
+		self.field = field
+		self.votes_field_name = '%s_votes' % (self.field_name, )
+		self.score_field_name = '%s_score' % (self.field.name, )
+
+	def __get__(self, instance, type=None):
+		if instance = None:
+			return self.field
+
+		return RatingManager(instance, self.field)
+
+	def __set__(self, instance, value):
+		if isinstance(value, Rating):
+			setattr(instance, self.votes_field_name, value.votes)
+			setattr(instance, self.score_field_name, value.score)
+
+		else:
+			raise TypeError("%s value must be a Rating instance, not '%r' " % (self.field.name, value))
+
+
 class RatingField(PositiveIntegerField):
 	'''
 	Rating field voegt 2 DB kolommen toe, namelijk het aantal votes en de score (totaalscore als som)
@@ -61,15 +84,15 @@ class RatingField(PositiveIntegerField):
 	def contribute_to_class(self, cls, name):
 
 		self.name = name
-		self.key = md5(self.name).hexdigest()
+		#self.key = md5(self.name).hexdigest()
 
 		# votes field
 		self.votes_field = PositiveIntegerField(editable=False, default=0, blank=True)
-		cls.add_to_class('%s_votes' % (self.name, ), self.votes_field)
+		cls.add_to_class('%s_votes' % (self.name, ), self.votes_field) # Add <model_name>_votes to class
 
 		# score sum field
 		self.score_field = IntegerField(editable=False, default=0, blank=True)
-		cls.add_to_class('%s_votes' % (self.name, ), self.score_field)
+		cls.add_to_class('%s_score' % (self.name, ), self.score_field) # Add <model_name>_score to class
 
 		field = RatingCreator(self)
 
