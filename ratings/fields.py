@@ -8,12 +8,18 @@ from .models import Score, Vote
 from .forms import RatingFormField
 
 class Rating(object):
+	'''
+	This is a python object to represent a rating. 
+	'''
 
 	def __init__(self, score, votes):
 		self.score = score
 		self.votes = votes
 
 class RatingManager(object):
+	'''
+	RatingManager 
+	'''
 
 	def __init__(self, instance, field):
 
@@ -31,6 +37,13 @@ class RatingManager(object):
 
 		return Vote.objects.filter(content_type=self.get_content_type(), object_id=self.instance.pk, key=self.field.key)
 
+	def get_score(self):
+
+		if not (self.votes and self.score):
+			return 0
+
+		return float(self.score/self.votes)
+
 	def get_rating_for_user(self, user):
 		'''
 		Returns the rating for a given user
@@ -44,11 +57,14 @@ class RatingManager(object):
 		)
 
 class RatingCreator(object):
+	'''
+	RatingCreator creates a python Rating object, and is used on RatingField 
+	'''
 
 	def __init__(self, field):
 
 		self.field = field
-		self.votes_field_name = '%s_votes' % (self.field_name, )
+		self.votes_field_name = '%s_votes' % (self.field.name, )
 		self.score_field_name = '%s_score' % (self.field.name, )
 
 	def __get__(self, instance, type=None):

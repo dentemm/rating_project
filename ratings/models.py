@@ -8,6 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.auth.models import User
 
+from .managers import VoteManager
+
 # Create your models here.
 
 __all__ = ('Score', 'Vote', )
@@ -27,21 +29,24 @@ class Score(models.Model):
 	# De feitelijke score (totaalsom ?)
 	score = models.IntegerField() 
 
+	key = models.CharField(max_length=32)
+
 	class Meta:
 		unique_together = (
-			('content_type', 'object_id', 'user')
+			('content_type', 'object_id', 'key')
 		)
 
 	def __unicode__(self):
 		return u'%s scored %s with %s votes' % (self.content_object, self.score, self.votes_count)
 
-	'''def get_votes(self):
+	def get_votes(self):
 
-		return Vote.objects.filter(content_type=self.content_type, object_id=self.object_id)
+		return Vote.objects.filter(content_type=self.content_type, object_id=self.object_id, key=self.key)
 
-	def recalculate(self, weight=0):
+	
+	def recalculate(self, commit=True):
 
-		existing_votes = self.get_votes()'''
+		existing_votes = self.get_votes()
 
 
 
@@ -50,20 +55,18 @@ class Vote(models.Model):
 	Een enkele stem voor een bepaald content object, gelinkt aan een gebruiker
 	'''
 
-	# Het model waarop wordt gestemd
 	content_type = models.ForeignKey(ContentType)
-	# 
 	object_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'content_id')
 
 	# De gebruiker die een stem uitbrengt
 	user = models.ForeignKey(User, related_name='votes')
-	# Een unique identifier voor een model instance, dit is typisch de pk van het object
-	object_id = models.PositiveIntegerField()
 
+	created_at = models.DateTimeField(auto_now_add=True, editable=False)
+	modified_at = models.DateTimeField(auto_now=True, editable=False)
 
-	created_at = models.DateTimeField(auto_now_add=True)
-	modified_at = models.DateTimeField(auto_now=True)
+	objects = VoteManager()
+
 
 	class Meta:
 
@@ -73,15 +76,12 @@ class Vote(models.Model):
 		)
 
 	def __unicode__(self):
-		return 'Score (%s) van %s op %s' % (self.score, self.user, self.content_object) 
+		return u'%s gaf een score van %s op %s' % (self.user, self.score, self.content_object) 
 
 	def save(self, *args, **kwargs):
 		self.modified_at = datetime.now()
 
 		super(Vote, self).save(*args, **kwargs)
-
-
-
 
 
 
@@ -103,21 +103,5 @@ class RatingMixin(models.Model):
 	def get_score(self, key):
 		return Score.objects.get_for(self, key)
 
-	'''
-	def field_score(self, field):
 
-		return 10
-
-	def global_score(self):
-
-		for field in self.rating_fields:
-
-			current_score = field_scores[field]'''
-
-
-	'''def __init__(self, fields=[]):
-
-		for field in fields:
-
-			self.fields.append(field)'''
 
