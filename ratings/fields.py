@@ -30,6 +30,13 @@ class RatingManager(object):
 		self.votes_field_name = "%s_votes" % (self.field.name, )
 		self.score_field_name = "%s_score" % (self.field.name, )
 
+	def get_percent(self):
+
+		if not (self.votes and self.score):
+			return 0
+
+		return 100 * (self.get_score() / self.field.range) 
+
 	def get_ratings(self):
 		'''
 		Returns a Vote queryset
@@ -55,6 +62,60 @@ class RatingManager(object):
 			object_id = self.instance.pk,
 			key = self.field.key,
 		)
+
+		kwargs['user'] = user
+
+		rating = Vote.objects.get(**kwargs)
+
+	def add(self, score, user, commit=True):
+		'''
+		Add a rating to an object
+		'''
+
+		# Update Vote 
+		try:
+			score = int(score)
+
+		except (ValueError, TypeError):
+			raise InvalidRating('%s is geen geldige waarde voor %s' % (score, self.field.name))
+
+
+		kwargs = dict (
+			content_type = self.get_content_type(),
+			object_id = self.instance.pk,
+			key = self.field.key,
+			user = user,
+		)
+
+		try:
+			rating = Vote.objects.get(**kwargs)
+
+		except Vote.DoesNotExist:
+			kwargs['score'] = score
+
+		rating = Vote.objects.create(**kwargs)
+
+		self.score += rating.score
+
+		self.instance.save()
+
+
+		# Update Score
+
+		kwargs = dict(
+			content_type = self.get_content_type(),
+			object_id = self.instance.pk,
+			key = self.field.key,
+		)
+
+		try: 
+			score = Score.objects.get(**kwargs)
+
+		except: Score.DoesNotExist:
+			kwargs['score'] = self.score
+			score = Score.objects.create(**kwargs)
+
+
 
 class RatingCreator(object):
 	'''
