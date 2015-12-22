@@ -34,3 +34,5 @@ def upsert_score(instance_or_content, key):
 	score, created = Score.objects.get_or_create(content_type=content_type, object_id=object_id, key=key)
 
 	score.recalculate()
+
+	return score, created

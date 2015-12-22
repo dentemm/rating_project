@@ -23,3 +23,4 @@ class VoteManager(Manager):
 			vote_dict = {}
 
 		return vote_dict
+
