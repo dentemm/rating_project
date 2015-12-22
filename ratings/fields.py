@@ -114,6 +114,7 @@ class RatingManager(object):
 		except: Score.DoesNotExist:
 			kwargs['score'] = self.score
 			score = Score.objects.create(**kwargs)
+			score.save()
 
 
 

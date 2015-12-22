@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.auth.models import User
 
-from .managers import VoteManager
+#from .managers import VoteManager
 
 # Create your models here.
 
@@ -24,12 +24,13 @@ class Score(models.Model):
 	content_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'content_id') # generic relation
 
-	# Het aantal stemmen dat werd uitgebracht om tot de huidige score te komen
-	votes_count = models.PositiveIntegerField(default=0) 
-	# De feitelijke score (totaalsom ?)
-	score = models.IntegerField() 
-
 	key = models.CharField(max_length=32)
+
+	votes_count = models.PositiveIntegerField(default=0) 
+	total_score = models.IntegerField(default=0) 
+	average = models.FloatField(default=0)
+
+
 
 	class Meta:
 		unique_together = (
@@ -46,7 +47,19 @@ class Score(models.Model):
 	
 	def recalculate(self, commit=True):
 
-		existing_votes = self.get_votes()
+		existing_votes = self.get_votes().aggregate(total=models.Sum('score'), votes_count=models.Count('id'))
+
+		self.total_score = existing_votes['total_score'] or 0
+		self.votes_count = existing_votes['votes_count']
+
+		if self.votes_count:
+			self.average = self.total_score / self.votes_count
+
+		else:
+			self.average = 0
+
+		if commit:
+			self.save()
 
 
 
@@ -58,6 +71,9 @@ class Vote(models.Model):
 	content_type = models.ForeignKey(ContentType)
 	object_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'content_id')
+
+	key = models.CharField(max_length=32)
+	score = models.FloatField()
 
 	# De gebruiker die een stem uitbrengt
 	user = models.ForeignKey(User, related_name='votes')
@@ -72,7 +88,7 @@ class Vote(models.Model):
 
 		# Een gebruiker kan maar 1 stem uitbrengen op een bepaald object
 		unique_together = (	
-			('content_type', 'object_id', 'user')
+			('content_type', 'object_id', 'key', 'user')
 		)
 
 	def __unicode__(self):
