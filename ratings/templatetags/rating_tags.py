@@ -5,6 +5,31 @@ from .models import Vote
 register = template.Library()
 
 
+class RatingByRequest(template.Node):
+
+	def __init__(self, request, obj, context_var):
+		self.request = request
+		self.obj, self.field_name = obj.split('.')
+		self.context_var = context_var
+
+	def render(self, context):
+		try: 
+			request = template.resolve_variable(self.request, context)
+			obj = template.resolve_variable(self.obj, context)
+			field = getattr(obj, self.field_name)
+
+		except (template.VariableDoesNotExist, AttributeError):
+			return ''
+
+		try: 
+			vote = field.get_rating_for_user(request.user)
+			context[self.context_var] = vote
+
+		except ObjectDoesNotExist:
+			context[self.context_var] = 0
+
+		return ''
+
 class RatingByUser(RatingByRequest):
 
 	def render(self, context):
