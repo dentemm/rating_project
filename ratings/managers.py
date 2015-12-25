@@ -17,8 +17,8 @@ class VoteManager(Manager):
 
 		if len(objects) > 0:
 
-			ctype = ContentType.objects.get_for_model(objects[0])
-			votes = list(self.filter(content_type__pk=ctype.id,
+			content_type = ContentType.objects.get_for_model(objects[0])
+			votes = list(self.filter(content_type__pk=content_type.id,
 									object_id__in=[obj._get_pk_val() for obj in objects],
 									user__pk=user.id))
 			vote_dict = dict([(vote.object_id, vote) for vote in votes])
