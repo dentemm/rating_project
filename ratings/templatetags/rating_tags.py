@@ -5,6 +5,28 @@ from .models import Vote
 register = template.Library()
 
 
+class RatingByUser(RatingByRequest):
+
+	def render(self, context):
+		try:
+
+			user = template.resolve_variable(self.request, context)
+			obj = template.resolve_variable(self.obj, context)
+			field = getattr(obj, self.field_name)
+
+		except template.VariableDoesNotExist:
+			return ''
+
+		try:
+			vote = field.get_rating_for_user(user)
+			context[self.context_var] = vote
+
+		except ObjectDoesNotExist:
+			context[self.context_var] = 0
+
+		return ''
+
+
 def rating_for_user(parser, token):
 	'''
 	Ga na of de gebruiker reeds een Vote heeft uitgebracht op een gegeven object,
