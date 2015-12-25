@@ -19,7 +19,7 @@ class Score(models.Model):
 	Een score voor een bijhorende content object. 
 	'''
 
-	# ContentType generic relations: content_type en content_id required!
+	# Create relation to ContentType (content_type, content_id and content_object attributes needed)
 	content_type = models.ForeignKey(ContentType)
 	content_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'content_id') # generic relation
@@ -68,6 +68,7 @@ class Vote(models.Model):
 	Een enkele stem voor een bepaald content object, gelinkt aan een gebruiker
 	'''
 
+	# Create relation to ContentType (content_type, content_id and content_object attributes needed)
 	content_type = models.ForeignKey(ContentType)
 	object_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'content_id')

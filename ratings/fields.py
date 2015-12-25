@@ -18,7 +18,7 @@ class Rating(object):
 
 class RatingManager(object):
 	'''
-	RatingManager 
+	RatingManager, to get different representations of a Rating object
 	'''
 
 	def __init__(self, instance, field):
@@ -117,7 +117,6 @@ class RatingManager(object):
 			score.save()
 
 
-
 class RatingCreator(object):
 	'''
 	RatingCreator creates a python Rating object, and is used on RatingField 
@@ -160,6 +159,10 @@ class RatingField(PositiveIntegerField):
 		super(RatingField, self).__init__(*args, **kwargs)
 
 	def contribute_to_class(self, cls, name):
+		'''
+		This is the method add_to_class() (models.Model) will delegate to, in order to add 
+		a field to itself 
+		'''
 
 		self.name = name
 		#self.key = md5(self.name).hexdigest()
