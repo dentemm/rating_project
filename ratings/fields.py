@@ -30,6 +30,14 @@ class RatingManager(object):
 		self.votes_field_name = "%s_votes" % (self.field.name, )
 		self.score_field_name = "%s_score" % (self.field.name, )
 
+	def get_content_type(self):
+
+		if self.content_type = None:
+			self.content_type = ContentType.objects.get_for_model(self.instance)
+
+		return self.content_type
+
+
 	def get_percent(self):
 
 		if not (self.votes and self.score):
@@ -56,14 +64,18 @@ class RatingManager(object):
 		Returns the rating for a given user
 		'''
 
+		if not user:
+			raise ValueError('user must be logged in!')
+
 		kwargs = dict (
 
 			content_type = self.get_content_type(),
 			object_id = self.instance.pk,
 			key = self.field.key,
+			user = user 
 		)
 
-		kwargs['user'] = user
+		#kwargs['user'] = user
 
 		rating = Vote.objects.get(**kwargs)
 

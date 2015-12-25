@@ -1,9 +1,13 @@
 import itertools
 
 from django.db.models import Manager
-#from django.db.models.query import QuerySet
+from django.db.models.query import QuerySet
 from django.contrib.contenttypes.models import ContentType
 
+
+class VoteQuerySet(QuerySet):
+
+	pass
 
 class VoteManager(Manager):
 
