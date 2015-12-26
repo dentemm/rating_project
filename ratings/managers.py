@@ -28,3 +28,20 @@ class VoteManager(Manager):
 
 		return vote_dict
 
+class RatingsManager(models.Manager):
+	'''
+	-- In case of mixin solution --
+
+	This manager is used by Vote AND Score models => generic code (contenttypes framework) needed
+	'''
+
+	def get_for(self, content_object, key, **kwargs):
+
+		content_type = ContentType.objects.get_for_model(type(content_object))
+
+		try:
+			# Return Vote or Score DB object for given key, content_type and object_id (so unique!)
+			return self.get(key=key, content_type=content_type, object_id=content_object.pk, **kwargs)
+
+		except self.model.DoesNotExist:
+			return None
