@@ -48,6 +48,34 @@ class RatingsManager(models.Manager):
 		except self.model.DoesNotExist:
 			return None
 
-	'''def filter_for(self, content_object_or_model, **kwargs):
+	def filter_for(self, content_object_or_model, **kwargs):
+		# Return all Votes or Score related to *content_object_or_model* 
+		# content_object_or_model can either be a model instance or a model class
 
-		if isinstance(content_object_or_model, models.base.ModelBase):'''
+		if isinstance(content_object_or_model, models.base.ModelBase):
+			lookups = {
+				'content_type': ContentType.objects.get_for_model(type(content_object_or_model)),
+			}
+
+		else:
+			lookups = {
+				'content_type': ContentType.objects.get_for_model(type(content_object_or_model)),
+				'object_id': content_object_or_model.pk,
+			}
+
+		lookups.update(kwargs)
+
+		return self.filter(**lookups)
+
+	def score_or_votes_for_user(self, **kwargs):
+		# Return all Vote or Score instances for a given user
+
+		if 'user' in kwargs:
+			user = kwargs.pop('user')
+			queryset = self.filter_for(user, **kwargs):
+
+		else:
+			queryset = self.filter(**kwargs)
+
+		return QuerysetWithContents(queryset)
+
