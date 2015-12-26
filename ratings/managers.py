@@ -35,7 +35,9 @@ class RatingsManager(models.Manager):
 	This manager is used by Vote AND Score models => generic code (contenttypes framework) needed
 	'''
 
-	def get_for(self, content_object, key, **kwargs):
+	def get_score_or_vote_for(self, content_object, key, **kwargs):
+		# Return Vote or Score DB object for given key, content_type and object_id (so unique!)
+		# Was previously named get_for(...)
 
 		content_type = ContentType.objects.get_for_model(type(content_object))
 
@@ -45,3 +47,7 @@ class RatingsManager(models.Manager):
 
 		except self.model.DoesNotExist:
 			return None
+
+	'''def filter_for(self, content_object_or_model, **kwargs):
+
+		if isinstance(content_object_or_model, models.base.ModelBase):'''
