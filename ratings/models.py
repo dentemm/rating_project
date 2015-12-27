@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.auth.models import User
 
-#from .managers import VoteManager
+from .managers import VoteManager
 
 # Create your models here.
 
@@ -24,21 +24,34 @@ class Score(models.Model):
 	content_id = models.PositiveIntegerField()
 	content_object = GenericForeignKey('content_type', 'content_id') # generic relation
 
-	key = models.CharField(max_length=32)
+	# DB optimalization
+	#key = models.CharField(max_length=32)
 
 	votes_count = models.PositiveIntegerField(default=0) 
 	total_score = models.IntegerField(default=0) 
 	average = models.FloatField(default=0)
 
 
-
 	class Meta:
 		unique_together = (
-			('content_type', 'object_id', 'key')
+			('content_type', 'object_id', )
 		)
 
 	def __unicode__(self):
 		return u'%s scored %s with %s votes' % (self.content_object, self.score, self.votes_count)
+
+	@property
+	def percentage(self):
+	    return 100 * (self.average / defaults.RANGE)
+
+	def to_dict(self):
+		return {
+			'count': self.votes_count,
+			'total': self.total_score,
+			'average' : self.average,
+			'percentage': self.percentage,
+		}
+	
 
 	def get_votes(self):
 
@@ -47,7 +60,7 @@ class Score(models.Model):
 	
 	def recalculate(self, commit=True):
 
-		existing_votes = self.get_votes().aggregate(total=models.Sum('score'), votes_count=models.Count('id'))
+		existing_votes = self.get_votes().aggregate(total=models.Sum('score'), votes_count=models.Count('id'), average=models.Avg('score'))
 
 		self.total_score = existing_votes['total_score'] or 0
 		self.votes_count = existing_votes['votes_count']
@@ -102,8 +115,6 @@ class Vote(models.Model):
 
 
 
-
-
 # Niet meer nodig, zal worden vervangen door een field
 class RatingMixin(models.Model):
 	'''
@@ -116,9 +127,6 @@ class RatingMixin(models.Model):
 	class Meta:
 		abstract = True
 
-	# Wat is key hier? mss het field?
-	def get_score(self, key):
-		return Score.objects.get_for(self, key)
 
 
 

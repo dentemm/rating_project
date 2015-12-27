@@ -28,6 +28,13 @@ class VoteManager(Manager):
 
 		return vote_dict
 
+
+class ScoreManager(Manager):
+
+	def get_score_for_user(self, object, user):
+
+
+
 class RatingsManager(models.Manager):
 	'''
 	-- In case of mixin solution --
